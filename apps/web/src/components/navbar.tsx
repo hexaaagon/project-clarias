@@ -1,6 +1,6 @@
 "use client";
 import { Slot } from "@radix-ui/react-slot";
-import { Undo } from "lucide-react";
+import { Undo, Waves } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import posthog from "posthog-js";
@@ -257,9 +257,12 @@ export default function NavbarClient() {
               )}
             <Link
               href="/"
-              className="font-medium font-mono text-xs sm:text-base"
+              className="flex items-center gap-2 font-bold font-montreal text-lg tracking-tight"
             >
-              project clarias
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-600 text-white shadow-sm">
+                <Waves className="h-4 w-4" />
+              </div>
+              clarias.
             </Link>
             {matchPath(pathname, backItems) && (
               <Link href="/blog" className="flex h-4 items-center">
@@ -272,11 +275,12 @@ export default function NavbarClient() {
           </div>
           <div className="flex items-center gap-6">
             {isMounted && !isMobile && (
-              <nav className="flex gap-4 font-montreal-mono text-xs transition-opacity duration-300">
+              <nav className="flex gap-1 transition-opacity duration-300">
                 {navItems.map((item) => (
                   <Link
                     key={item.title}
                     href={item.href}
+                    className="rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-separator/10 hover:text-foreground capitalize"
                     onClick={() => {
                       posthog.capture("buttonClicked", {
                         location: "navbar",

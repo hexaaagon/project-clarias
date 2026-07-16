@@ -4,16 +4,25 @@ import { GrainGradient } from "@paper-design/shaders-react";
 import { AtomIcon } from "@phosphor-icons/react";
 import {
   AlertTriangle,
+  ArrowUp,
+  CheckCircle2,
+  Clock,
   Cpu,
   Download,
   Droplets,
+  FileText,
   Play,
   ShieldCheck,
+  Sparkles,
   Thermometer,
   Waves,
 } from "lucide-react";
+import { LayoutGroup, motion } from "motion/react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import ShirokoTransparent from "#/public/static/image/shiroko-transparent.png";
+import RotatingText from "#/src/components/ui/rotating-text";
 import { BiomassChart } from "@/components/biomass-chart";
 import { PlusSeparator } from "@/components/ui/plus-separator";
 import { cn } from "@/lib/utils";
@@ -185,7 +194,7 @@ export default function LandingPage() {
   };
 
   return (
-    <>
+    <div className="flex w-full flex-col">
       <main>
         {/* HERO SECTION - HYBRID */}
         <section className="relative flex min-h-[50vh] flex-col">
@@ -212,18 +221,53 @@ export default function LandingPage() {
                 Project Clarias
               </h1>
 
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center gap-2">
                 <h2 className="font-semibold text-4xl sm:text-5xl lg:text-6xl">
                   Make your farm
                 </h2>
-                <h2 className="font-semibold text-4xl text-blue-500 mix-blend-exclusion sm:text-5xl lg:text-6xl">
-                  like a tycoon.
-                </h2>
+                <LayoutGroup>
+                  <motion.h1
+                    className="flex items-center gap-3 font-semibold text-2xl sm:text-3xl md:text-5xl"
+                    layout
+                  >
+                    {/*
+                    <motion.span
+                      layout
+                      transition={{
+                        type: "spring",
+                        damping: 30,
+                        stiffness: 400,
+                      }}
+                    >
+                      prefix
+                    </motion.span>*/}
+                    <RotatingText
+                      texts={[
+                        "like a tycoon.",
+                        "thinks on it's own.",
+                        "life and live safely",
+                      ]}
+                      mainClassName="font-semibold text-4xl bg-blue-500 text-white mix-blend-exclusion px-4 py-2 rounded-md sm:text-5xl lg:text-6xl"
+                      staggerFrom={"last"}
+                      initial={{ y: "100%" }}
+                      animate={{ y: 0 }}
+                      exit={{ y: "-120%" }}
+                      staggerDuration={0.025}
+                      splitLevelClassName="overflow-hidden pb-0.5"
+                      transition={{
+                        type: "spring",
+                        damping: 30,
+                        stiffness: 400,
+                      }}
+                      rotationInterval={5000}
+                    />
+                  </motion.h1>
+                </LayoutGroup>
               </div>
 
               <div className="flex gap-4 pt-2">
                 <Link
-                  href="/"
+                  href="/auth"
                   className="bg-foreground px-6 py-3 font-bold font-mono text-background text-sm uppercase transition hover:bg-foreground/90"
                 >
                   [get started]
@@ -337,71 +381,77 @@ export default function LandingPage() {
                 </div>
               </div>
               */}
-          </div>
 
-          <div className="border-separator/10 border-t">
-            <div className="inner relative m-auto border-separator/10 border-x p-4">
-              <span className="relative flex items-center justify-between font-montreal-mono text-xs opacity-90 transition-opacity duration-300 dark:opacity-75">
-                <Link
-                  target="_blank"
-                  href="https://time.is/Jakarta"
-                  className="hover:underline"
-                >
-                  [Timezone: Jakarta, ID]
-                </Link>
-                <span className="text-muted-foreground">
-                  SYSTEM STATUS: ALL SYSTEMS NOMINAL
+            {/* Modern Floating Status Pill */}
+            <div className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2">
+              <div className="flex items-center gap-3 rounded-full border border-separator/20 bg-background/50 px-4 py-2 shadow-lg backdrop-blur-md">
+                <div className="flex h-2 w-2 items-center justify-center">
+                  <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                </div>
+                <span className="font-medium font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+                  All Systems Nominal • JKT
                 </span>
-              </span>
-              <PlusSeparator position={["top-left", "top-right"]} />
+              </div>
             </div>
+
+            <PlusSeparator position={["bottom-left", "bottom-right"]} />
           </div>
         </section>
 
-        {/* ABOUT SECTION */}
-        <main className="w-full border-separator/10 border-t">
-          <div className="inner relative flex h-full flex-col border-separator/10 border-x px-4 sm:px-8 xl:flex-row xl:justify-between xl:px-16">
-            <div className="py-24 xl:max-w-xl">
-              <h2 className="mb-4 font-bold font-montreal text-2xl">
-                the core problem
+        {/* ABOUT SECTION - UNIQUE LAYOUT */}
+        <main id="problem" className="w-full border-separator/10 border-t">
+          <div className="inner relative flex flex-col items-center justify-center border-separator/10 border-x px-4 py-20 text-center sm:px-8 lg:px-16">
+            <div className="max-w-3xl">
+              <span className="mb-4 inline-flex items-center justify-center rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 font-bold font-mono text-[10px] text-red-600 uppercase shadow-sm">
+                The Problem
+              </span>
+              <h2 className="mb-6 font-bold font-montreal text-3xl sm:text-4xl">
+                Traditional Farming is Broken.
               </h2>
-              <p className="text-sm leading-relaxed sm:text-base">
-                traditional catfish farming is labor-intensive and lacks
-                accurate data monitoring. farmers often guess water quality
+              <p className="mb-4 text-base text-muted-foreground leading-relaxed sm:text-lg">
+                Traditional catfish farming is labor-intensive and lacks
+                accurate data monitoring. Farmers often guess water quality
                 parameters and feeding times, leading to
-                <span className="mx-1 text-destructive underline decoration-destructive decoration-dashed">
-                  high mortality rates
+                <span className="mx-1 font-mono font-semibold text-red-500 underline decoration-red-500/30 decoration-wavy underline-offset-4">
+                  High Mortality Rates
                 </span>
-                and wasted feed. fish feed alone can account for up to 70% of
+                and wasted feed. Fish feed alone can account for up to 70% of
                 total operational costs in aquaculture.
               </p>
-              <br />
-              <p className="text-sm leading-relaxed sm:text-base">
-                to solve this, we created project clarias. it uses automated
+              <p className="text-base text-muted-foreground leading-relaxed sm:text-lg">
+                To solve this, we created Project Clarias. It uses automated
                 servo-based feeders and real-time dissolved oxygen sensors to
-                track everything about the pond's health. since we started
-                building it, we've focused on ensuring the hardware can
-                withstand rural outdoor environments while providing seamless
-                cloud synchronization.
+                track everything about the pond's health.
               </p>
             </div>
 
-            <div className="relative mx-auto mb-12 flex w-full max-w-sm items-center justify-center xl:mr-0 xl:mb-0 xl:ml-auto">
-              <div className="flex w-full flex-col justify-between rounded-xs border border-separator/10 bg-muted/30 p-6 shadow-sm dark:bg-muted/10">
-                <h2 className="font-montreal font-semibold text-xl">
-                  philosophy
-                </h2>
-                <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
-                  we believe technology shouldn't just be flashy, but
-                  practically useful for rural farmers. every metric we track is
-                  aimed at reducing cost and improving yield.
+            <div className="mt-16 grid w-full max-w-4xl grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="flex flex-col items-start rounded-xl border border-separator/10 bg-muted/20 p-8 text-left transition hover:bg-muted/30">
+                <div className="mb-4 rounded-full bg-blue-500/10 p-2 text-blue-600">
+                  <ShieldCheck className="h-6 w-6" />
+                </div>
+                <h3 className="mb-2 font-bold font-montreal text-xl">
+                  Our Philosophy
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Technology shouldn't just be flashy, but practically useful
+                  for rural farmers. Every metric we track is aimed at reducing
+                  cost and improving yield.
                 </p>
-                <Link
-                  className="mt-6 font-bold font-mono text-blue-600 text-sm hover:underline dark:text-blue-400"
-                  href="/"
-                >
-                  [/view-dashboard]
-                </Link>
+              </div>
+              <div className="flex flex-col items-start rounded-xl border border-separator/10 bg-muted/20 p-8 text-left transition hover:bg-muted/30">
+                <div className="mb-4 rounded-md bg-emerald-500/10 p-2 text-emerald-600">
+                  <Cpu className="h-6 w-6" />
+                </div>
+                <h3 className="mb-2 font-bold font-montreal text-xl">
+                  Hardware Focused
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Since we started building it, we've focused on ensuring the
+                  hardware can withstand rural outdoor environments while
+                  providing seamless cloud synchronization.
+                </p>
               </div>
             </div>
 
@@ -409,202 +459,309 @@ export default function LandingPage() {
           </div>
         </main>
 
-        {/* PROJECTS / FEATURES TITLE SECTION */}
-        <main className="w-full border-separator/10 border-t bg-muted/50">
-          <div className="inner relative flex flex-col items-center justify-center border-separator/10 border-x px-4 py-16 text-center sm:px-8">
-            <span className="mb-6 inline-flex items-center justify-center rounded border border-separator/20 bg-background px-3 py-1 font-bold font-mono text-[10px] text-blue-600 uppercase shadow-sm">
-              Interactive Sandboxes
+        {/* DEMO SECTION */}
+        <main
+          id="modules"
+          className="w-full border-separator/10 border-t bg-muted/50"
+        >
+          <div className="inner relative flex flex-col items-center justify-center border-separator/10 border-x px-4 py-16 text-center sm:px-8 lg:px-16">
+            <span className="mb-6 inline-flex items-center justify-center rounded-full border border-separator/20 bg-background px-3 py-1 font-bold font-mono text-[10px] text-blue-600 uppercase shadow-sm">
+              See it in action
             </span>
             <h2 className="mb-4 font-extrabold font-montreal text-3xl text-foreground tracking-tight sm:text-4xl lg:text-5xl">
-              Core System Modules
+              System Demonstration
             </h2>
             <p className="max-w-xl text-muted-foreground text-sm leading-relaxed sm:text-base">
-              We engineered our IoT and analytics systems to be resilient and
-              precise. Explore the live sandbox simulations below to interact
-              with our hardware controllers and predictive models.
+              Watch how our IoT and analytics systems work together to deliver
+              real-time insights and automated feeding control.
             </p>
-            <PlusSeparator position={["top-left", "top-right"]} />
-          </div>
 
-          <div className="inner relative border-separator/10 border-x p-2">
-            <section className="relative grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-12">
-              {/* FEEDER CARD */}
-              <div className="group relative flex flex-col justify-between overflow-hidden rounded-xs border border-separator/10 bg-background transition-all hover:border-foreground/20 lg:col-span-5">
-                <div className="flex flex-col gap-4 p-6">
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="inline-flex w-fit items-center justify-center rounded border border-separator/20 bg-muted/50 px-2 py-0.5 font-mono font-semibold text-[10px] text-foreground uppercase">
-                      IoT System
-                    </span>
-                    <span className="inline-flex w-fit items-center justify-center rounded border border-separator/20 bg-muted/50 px-2 py-0.5 font-mono font-semibold text-[10px] text-foreground uppercase">
-                      Hardware Control
-                    </span>
-                  </div>
-                  <h2 className="font-montreal font-semibold text-xl leading-tight">
-                    Smart Feeder Dispenser
-                  </h2>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    Automated motor dispensation for Hi-Pro-Vite pellets.
-                    Triggers based on computed conversion ratios, avoiding
-                    overfeeding while tracking daily costs.
-                  </p>
-
-                  <div className="mt-4 rounded-lg border border-separator/10 bg-muted/30 p-5 shadow-inner">
-                    <div className="mb-5 flex items-center justify-center gap-5">
-                      <div className="relative flex h-16 w-16 items-center justify-center rounded-full border-2 border-separator/20 bg-background shadow-sm">
-                        <div
-                          className={cn(
-                            "flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-background transition-transform duration-300",
-                            isFeeding && "animate-spin",
-                          )}
-                        >
-                          <Cpu className="h-5 w-5" />
-                        </div>
-                      </div>
-                      <div className="flex-1 space-y-1.5">
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
-                          Servo Motor Status
-                        </p>
-                        <p className="font-bold font-mono text-foreground text-xs">
-                          {isFeeding
-                            ? `DISPENSING (${feedProgress}%)`
-                            : "SYSTEM IDLE"}
-                        </p>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-separator/20">
-                          <div
-                            className="h-full bg-blue-500 transition-all duration-200"
-                            style={{ width: `${feedProgress}%` }}
-                          ></div>
-                        </div>
+            <div className="mt-16 flex w-full max-w-5xl flex-col gap-16 lg:gap-24">
+              {/* Feature 1 */}
+              <div className="flex flex-col items-center gap-8 lg:flex-row lg:gap-12">
+                <div className="w-full lg:w-1/2">
+                  <div className="flex flex-col overflow-hidden rounded-xl border border-separator/20 bg-background shadow-lg">
+                    <div className="flex items-center gap-2 border-separator/10 border-b bg-muted/30 px-4 py-3">
+                      <div className="h-2.5 w-2.5 rounded-full bg-red-400/80"></div>
+                      <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80"></div>
+                      <div className="h-2.5 w-2.5 rounded-full bg-green-400/80"></div>
+                      <div className="ml-2 flex-1 truncate text-left font-mono text-[10px] text-muted-foreground">
+                        demo-feeder-sys.mp4
                       </div>
                     </div>
-                    <button
-                      onClick={triggerFeeder}
-                      disabled={isFeeding}
-                      className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded bg-foreground px-3 py-2.5 font-bold font-mono text-background text-xs uppercase shadow-md transition hover:bg-foreground/90 disabled:opacity-50"
-                    >
-                      <Play className="h-3.5 w-3.5" />
-                      {isFeeding ? "Spinning..." : "Trigger Manual Feed"}
-                    </button>
+                    <div className="relative aspect-video w-full bg-muted/20">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
+                        <Play className="mb-2 h-8 w-8 opacity-40" />
+                      </div>
+                      {/* <img src="/feeder-demo.gif" className="absolute inset-0 h-full w-full object-cover" /> */}
+                    </div>
                   </div>
+                </div>
+                <div className="w-full text-left lg:w-1/2">
+                  <h3 className="mb-4 font-bold font-montreal text-2xl lg:text-3xl">
+                    Automated Feeder
+                  </h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed sm:text-base">
+                    Watch the servo motor dispense precise amounts of feed based
+                    on real-time biomass calculations. This prevents overfeeding
+                    and optimizes your feed conversion ratio, saving significant
+                    costs.
+                  </p>
                 </div>
               </div>
 
-              {/* YIELD CARD */}
-              <div className="group relative flex flex-col justify-between overflow-hidden rounded-xs border border-separator/10 bg-background transition-all hover:border-foreground/20 lg:col-span-7">
-                <div className="flex flex-col gap-4 p-6">
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="inline-flex w-fit items-center justify-center rounded border border-separator/20 bg-muted/50 px-2 py-0.5 font-mono font-semibold text-[10px] text-foreground uppercase">
-                      Predictive
-                    </span>
-                    <span className="inline-flex w-fit items-center justify-center rounded border border-separator/20 bg-muted/50 px-2 py-0.5 font-mono font-semibold text-[10px] text-foreground uppercase">
-                      Analytics
-                    </span>
+              {/* Feature 2 - Reversed on Desktop */}
+              <div className="flex flex-col items-center gap-8 lg:flex-row-reverse lg:gap-12">
+                <div className="w-full lg:w-1/2">
+                  <div className="flex flex-col overflow-hidden rounded-xl border border-separator/20 bg-background shadow-lg">
+                    <div className="flex items-center gap-2 border-separator/10 border-b bg-muted/30 px-4 py-3">
+                      <div className="h-2.5 w-2.5 rounded-full bg-red-400/80"></div>
+                      <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80"></div>
+                      <div className="h-2.5 w-2.5 rounded-full bg-green-400/80"></div>
+                      <div className="ml-2 flex-1 truncate text-left font-mono text-[10px] text-muted-foreground">
+                        demo-water-quality.mp4
+                      </div>
+                    </div>
+                    <div className="relative aspect-video w-full bg-muted/20">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
+                        <Play className="mb-2 h-8 w-8 opacity-40" />
+                      </div>
+                      {/* <img src="/water-quality.gif" className="absolute inset-0 h-full w-full object-cover" /> */}
+                    </div>
                   </div>
-                  <h2 className="font-montreal font-semibold text-xl leading-tight">
-                    Biomass Forecaster & Reports
-                  </h2>
-                  <p className="max-w-2xl text-muted-foreground text-sm leading-relaxed">
-                    Predict total pond harvests based on biological models using
-                    fish sizes and stock counts. Export verified financial PDF
-                    reports to secure agricultural loan capital.
+                </div>
+                <div className="w-full text-left lg:w-1/2">
+                  <h3 className="mb-4 font-bold font-montreal text-2xl lg:text-3xl">
+                    Water Quality Alerts
+                  </h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed sm:text-base">
+                    See how the system instantly alerts farmers when Dissolved
+                    Oxygen drops below critical levels. Real-time telemetry
+                    ensures you can react immediately to prevent catastrophic
+                    fish kills.
                   </p>
+                </div>
+              </div>
 
-                  <div className="mt-4 grid grid-cols-1 items-end gap-8 md:grid-cols-2">
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <div className="flex justify-between font-mono font-semibold text-xs">
-                          <span className="text-muted-foreground">
-                            Catfish Avg Length
-                          </span>
-                          <span className="text-blue-600">{fishLength} cm</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="15"
-                          max="45"
-                          value={fishLength}
-                          onChange={(e) =>
-                            setFishLength(Number(e.target.value))
-                          }
-                          className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-separator/20 accent-foreground"
-                        />
+              {/* Feature 3 */}
+              <div className="flex flex-col items-center gap-8 lg:flex-row lg:gap-12">
+                <div className="w-full lg:w-1/2">
+                  <div className="flex flex-col overflow-hidden rounded-xl border border-separator/20 bg-background shadow-lg">
+                    <div className="flex items-center gap-2 border-separator/10 border-b bg-muted/30 px-4 py-3">
+                      <div className="h-2.5 w-2.5 rounded-full bg-red-400/80"></div>
+                      <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80"></div>
+                      <div className="h-2.5 w-2.5 rounded-full bg-green-400/80"></div>
+                      <div className="ml-2 flex-1 truncate text-left font-mono text-[10px] text-muted-foreground">
+                        demo-pdf-report.mp4
                       </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between font-mono font-semibold text-xs">
-                          <span className="text-muted-foreground">
-                            Pond Stock Count
-                          </span>
-                          <span className="text-blue-600">
-                            {stockDensity} pcs
-                          </span>
-                        </div>
-                        <input
-                          type="range"
-                          min="500"
-                          max="4000"
-                          step="100"
-                          value={stockDensity}
-                          onChange={(e) =>
-                            setStockDensity(Number(e.target.value))
-                          }
-                          className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-separator/20 accent-foreground"
-                        />
+                    </div>
+                    <div className="relative aspect-video w-full bg-muted/20">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
+                        <Play className="mb-2 h-8 w-8 opacity-40" />
                       </div>
-                      <div className="mt-4 grid grid-cols-2 gap-3">
-                        <div className="rounded border border-separator/10 bg-muted/30 p-3 text-center shadow-inner">
-                          <span className="font-mono text-[10px] text-muted-foreground uppercase">
-                            Biomass Yield
+                      {/* <img src="/pdf-export.gif" className="absolute inset-0 h-full w-full object-cover" /> */}
+                    </div>
+                  </div>
+                </div>
+                <div className="w-full text-left lg:w-1/2">
+                  <h3 className="mb-4 font-bold font-montreal text-2xl lg:text-3xl">
+                    Exporting PDF Reports
+                  </h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed sm:text-base">
+                    Generate comprehensive financial and growth reports for your
+                    farm with a single click. Use these verified documents to
+                    secure agricultural loans or share progress with
+                    stakeholders.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <PlusSeparator position={["top-left", "top-right"]} />
+          </div>
+        </main>
+
+        {/* AI AGENT SECTION */}
+        <main
+          id="ai-agent"
+          className="relative w-full overflow-hidden border-separator/10 border-t bg-muted/10"
+        >
+          <div className="pointer-events-none absolute top-1/2 left-1/2 -z-10 h-[600px] w-full max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 blur-[120px]" />
+
+          <div className="inner relative flex flex-col items-center justify-center border-separator/10 border-x px-4 py-24 text-center sm:px-8 lg:px-16">
+            <span className="mb-6 inline-flex items-center justify-center rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 font-bold font-mono text-[10px] text-blue-600 uppercase shadow-sm">
+              say hi to clarie!
+            </span>
+            <h2 className="mb-4 font-extrabold font-montreal text-3xl text-foreground tracking-tight sm:text-4xl lg:text-5xl">
+              Your cute, all-in-one AI pond manager.
+            </h2>
+            <p className="max-w-2xl text-muted-foreground text-sm leading-relaxed sm:text-base">
+              Let Clarie do the heavy lifting! She's the adorable brain behind
+              Project Clarias. Just text her in plain English to feed the fish,
+              schedule tasks, or whip up a PDF report, and she'll handle all the
+              messy IoT and database stuff for you. ✨
+            </p>
+
+            <div className="mt-16 grid w-full max-w-6xl gap-8 lg:grid-cols-2 lg:items-center">
+              {/* Chat Interface Mockup */}
+              <div className="relative">
+                {/* Mascot Peeking Placeholder */}
+                <div className="absolute -top-12 -left-8 -z-20 h-28 w-28 md:-top-32 md:-left-32 md:h-64 md:w-64">
+                  <Image
+                    src={ShirokoTransparent}
+                    alt="Clarie Mascot"
+                    className="absolute inset-0 h-full w-full -scale-x-100 object-contain drop-shadow-xl"
+                  />
+                </div>
+
+                <div className="flex flex-col overflow-hidden rounded-2xl border border-separator/20 bg-background/50 shadow-2xl backdrop-blur-xl">
+                  <div className="flex items-center justify-between border-separator/10 border-b bg-muted/30 px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-blue-100 shadow-sm">
+                        <span className="text-[10px]">🌸</span>
+                        {/* <img src="/clarie-mascot-head.png" className="h-full w-full object-cover" /> */}
+                      </div>
+                      <span className="font-mono font-semibold text-xs">
+                        Clarie AI
+                      </span>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <div className="h-2.5 w-2.5 rounded-full bg-red-400/80"></div>
+                      <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80"></div>
+                      <div className="h-2.5 w-2.5 rounded-full bg-green-400/80"></div>
+                    </div>
+                  </div>
+
+                  <div className="relative flex h-[320px] flex-col gap-4 overflow-hidden bg-muted/5 p-6 text-left">
+                    {/* User Message */}
+                    <div className="max-w-[80%] self-end rounded-2xl rounded-tr-sm bg-blue-600 px-4 py-3 text-white shadow-sm">
+                      <p className="font-medium text-sm">
+                        Hey Clarie, feed my fish at 5pm everyday and send me the
+                        weekly yield report on Fridays.
+                      </p>
+                    </div>
+
+                    {/* AI Message */}
+                    <div className="max-w-[85%] space-y-3 self-start">
+                      <div className="rounded-2xl rounded-tl-sm border border-separator/20 bg-background px-4 py-3 shadow-sm">
+                        <p className="text-foreground text-sm leading-relaxed">
+                          Got it! I've set up a daily Supabase cron job to
+                          trigger the <strong>Servo Dispenser</strong> at 5:00
+                          PM. I've also scheduled an automated PDF export every
+                          Friday at 8:00 AM.
+                        </p>
+                      </div>
+
+                      {/* Tool executions */}
+                      <div className="flex flex-col gap-2 pl-2">
+                        <div className="flex items-center gap-2 font-mono text-muted-foreground text-xs">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                          <span>
+                            Created cron: <code>feed_daily_1700</code>
                           </span>
-                          <p className="mt-1 font-bold font-mono text-foreground text-lg">
-                            {estimatedBiomassKg} kg
-                          </p>
                         </div>
-                        <div className="rounded border border-separator/10 bg-muted/30 p-3 text-center shadow-inner">
-                          <span className="font-mono text-[10px] text-muted-foreground uppercase">
-                            Market Value
+                        <div className="flex items-center gap-2 font-mono text-muted-foreground text-xs">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                          <span>
+                            Scheduled: <code>report_weekly_fri</code>
                           </span>
-                          <p className="mt-1 font-bold font-mono text-green-600 text-lg">
-                            ${estimatedMarketValueUSD}
-                          </p>
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="flex flex-col gap-4">
-                      <div className="rounded border border-separator/10 bg-background p-2 shadow-inner">
-                        <BiomassChart />
-                      </div>
-                      <button
-                        onClick={triggerPdfDownload}
-                        disabled={downloadingReport}
-                        className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded bg-foreground px-3 py-2.5 font-bold font-mono text-background text-xs uppercase shadow-md transition hover:bg-foreground/90 disabled:opacity-50"
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                        {downloadingReport
-                          ? "Generating Document..."
-                          : "Export Live PDF Report"}
+                  <div className="border-separator/10 border-t bg-background p-3">
+                    <div className="flex items-center gap-2 rounded-full border border-separator/20 bg-muted/30 px-4 py-2">
+                      <span className="flex-1 font-mono text-muted-foreground/70 text-xs">
+                        Type a command for Clarie...
+                      </span>
+                      <button className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white">
+                        <ArrowUp className="h-3 w-3" />
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
-            </section>
 
-            <section className="flex flex-col items-center justify-center py-16 text-center">
+              {/* Capabilities List */}
+              <div className="flex flex-col gap-6 text-left lg:pl-12">
+                <div className="flex items-start gap-4 rounded-xl border border-transparent p-4 transition hover:border-separator/10 hover:bg-muted/20">
+                  <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-600">
+                    <Cpu className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold font-montreal text-xl">
+                      IoT Orchestration
+                    </h3>
+                    <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+                      Clarie can parse natural language to trigger hardware
+                      actions, like spinning the servo motor or requesting a
+                      forced DO reading from sensors.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 rounded-xl border border-transparent p-4 transition hover:border-separator/10 hover:bg-muted/20">
+                  <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-500/10 text-purple-600">
+                    <Clock className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold font-montreal text-xl">
+                      Supabase Cron Jobs
+                    </h3>
+                    <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+                      She automatically translates requests like "every evening"
+                      into valid Supabase pg_cron schedules, running operations
+                      even when you're offline.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 rounded-xl border border-transparent p-4 transition hover:border-separator/10 hover:bg-muted/20">
+                  <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+                    <FileText className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold font-montreal text-xl">
+                      Analytics & PDF Exports
+                    </h3>
+                    <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
+                      Need a report right now? Clarie gathers the latest pond
+                      biomass data, calculates yields, and instantly compiles a
+                      PDF document.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <PlusSeparator position={["top-left", "top-right"]} />
+          </div>
+        </main>
+        <main className="w-full border-separator/10 border-t">
+          <div className="inner relative flex flex-col items-center justify-center border-separator/10 border-x px-4 py-24 text-center">
+            <section
+              id="dashboard"
+              className="flex flex-col items-center justify-center"
+            >
               <h3 className="mb-3 font-bold font-montreal text-2xl text-foreground">
-                ready to optimize your farm?
+                Ready to Optimize Your Farm?
               </h3>
               <p className="mb-6 max-w-md text-muted-foreground text-sm">
-                experience the complete capabilities of project clarias by
+                Experience the complete capabilities of Project Clarias by
                 launching into our application dashboard.
               </p>
-              <Link
-                className="rounded bg-blue-600 px-8 py-3 font-mono font-semibold text-white transition hover:bg-blue-700"
-                href="/"
-              >
-                [enter dashboard]
-              </Link>
+              <div className="flex gap-4 pt-2">
+                <Link
+                  href="/auth"
+                  className="bg-foreground px-6 py-3 font-bold font-mono text-background text-sm uppercase transition hover:bg-foreground/90"
+                >
+                  [get started]
+                </Link>
+              </div>
             </section>
+            
+            <PlusSeparator position={["top-left", "top-right"]} />
           </div>
         </main>
 
@@ -655,12 +812,12 @@ export default function LandingPage() {
         <section className="relative h-[50px] w-full border-separator/10 border-t bg-muted/20">
           <div className="inner relative flex h-full items-center justify-between border-separator/10 border-x p-4">
             <p className="max-w-[60%] font-mono text-2xs text-muted-foreground uppercase leading-3 tracking-widest">
-              This project is built for the Semoga Menang Hackathon.
+              This project is built for Garuda Hacks 7.0 Hackathon.
             </p>
             <PlusSeparator position={["top-left", "top-right"]} />
           </div>
         </section>
       </footer>
-    </>
+    </div>
   );
 }
