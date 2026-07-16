@@ -9,6 +9,7 @@
   "dependencies": {
     "@better-fetch/fetch": "^1.3.0",
     "@hono/zod-validator": "^0.8.0",
+    "@openrouter/sdk": "^0.13.60",
     "@project-clarias/auth": "*",
     "@project-clarias/database": "*",
     "@project-clarias/env": "*",

@@ -5,6 +5,7 @@ import { LogOut } from "lucide-react";
 import { EnvironmentMonitor } from "@/components/environment-monitor";
 import { BiomassChart } from "@/components/biomass-chart";
 import { Button } from "@/components/ui/button";
+import { AICopilotSection } from "@/components/ai-copilot";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -23,6 +24,11 @@ export default function DashboardPage() {
           Sign out
         </Button>
       </div>
+
+      {/* AI Copilot Section */}
+      <section>
+        <AICopilotSection />
+      </section>
 
       <section>
         <h2 className="mb-3 text-lg font-medium">Environment Snapshot</h2>

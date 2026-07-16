@@ -17,6 +17,7 @@
       "dependencies": {
         "@better-fetch/fetch": "^1.3.0",
         "@hono/zod-validator": "^0.8.0",
+        "@openrouter/sdk": "^0.13.60",
         "@project-clarias/auth": "*",
         "@project-clarias/database": "*",
         "@project-clarias/env": "*",
@@ -40,11 +41,15 @@
         "@paper-design/shaders-react": "^0.0.77",
         "@phosphor-icons/react": "^2.1.10",
         "@project-clarias/backend": "*",
+        "@project-clarias/env": "*",
         "@project-clarias/rpc": "*",
         "@radix-ui/react-avatar": "^1.2.2",
         "@radix-ui/react-label": "^2.1.11",
         "@radix-ui/react-separator": "^1.1.11",
         "@radix-ui/react-slot": "^1.3.0",
+        "@supabase/ssr": "^0.12.0",
+        "@supabase/supabase-js": "^2.108.1",
+        "better-auth": "^1.6.18",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "fumadocs-core": "^16.11.5",
@@ -396,6 +401,8 @@
     "@noble/curves": ["@noble/curves@1.9.7", "", { "dependencies": { "@noble/hashes": "1.8.0" } }, "sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw=="],
 
     "@noble/hashes": ["@noble/hashes@2.2.0", "", {}, "sha512-IYqDGiTXab6FniAgnSdZwgWbomxpy9FtYvLKs7wCUs2a8RkITG+DFGO1DM9cr+E3/RgADRpFjrKVaJ1z6sjtEg=="],
+
+    "@openrouter/sdk": ["@openrouter/sdk@0.13.60", "", { "dependencies": { "zod": "^3.25.0 || ^4.0.0" } }, "sha512-TIf72FuXjYAuaoXjn+AzSSKqmOcKzS5zusXfrdjtA9BvWK5LmU0x6KOt/AJLdaCyZ90R0dvFKe130P9x7GUmpQ=="],
 
     "@opentelemetry/semantic-conventions": ["@opentelemetry/semantic-conventions@1.43.0", "", {}, "sha512-eSYWTm620tTk45EKSedaUL8MFYI8hW164hIXsgIHyxu3VobUB3fFCu5t0hQby6OoWRPsG1KkKUG2M5UadiLiVg=="],
 

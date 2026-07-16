@@ -18,6 +18,7 @@
     "generate:migrations": "bun drizzle-kit generate",
     "generate:types": "supabase gen types typescript --project-id \"dhadwsjyljonlqgaytzr\" --schema public > ../shared/types/database.ts",
     "migrate": "bun --env-file=../../.env src/migrate.ts",
+    "seed": "bun --env-file=../../.env src/seed.ts",
     "drizzle-kit": "bun --env-file=../../.env drizzle-kit-w-env",
     "drizzle-kit-w-env": "drizzle-kit",
     "drop": "bun drizzle-kit drop",

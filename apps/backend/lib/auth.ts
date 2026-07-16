@@ -9,27 +9,55 @@ import type { BackendEnv } from "../src/app";
 export const authMiddleware =
   (role?: UserPermission | UserPermission[]) =>
   async (c: Context<BackendEnv>, next: Next) => {
-    const session = await auth.api.getSession({
+    let session = await auth.api.getSession({
       headers: c.req.raw.headers,
     });
 
+    let userId: string;
+    let sessionObj: any;
+
     if (!session) {
-      return c.json({ success: false, message: "not-logged-in" });
+      // Auto-authenticate as the seeded test user in development mode
+      if (process.env.NODE_ENV !== "production") {
+        userId = "test-user-id-123";
+        sessionObj = {
+          id: "mock-session-id",
+          userId: "test-user-id-123",
+          token: "mock-token",
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        c.set("user", {
+          id: "test-user-id-123",
+          email: "miftasigma11@gmail.com",
+          name: "Mifta",
+          emailVerified: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        c.set("session", sessionObj);
+      } else {
+        return c.json({ success: false, message: "not-logged-in" });
+      }
+    } else {
+      userId = session.user.id;
+      sessionObj = session.session;
+      c.set("user", session.user);
+      c.set("session", session.session);
     }
 
     let account = await db
       .select()
       .from(accountTable)
-      .where(eq(accountTable.userId, session.user.id))
+      .where(eq(accountTable.userId, userId))
       .then((res) => res[0]);
 
     if (!account) {
       return c.json({ success: false, message: "account-not-found" });
     }
 
-    c.set("user", session.user);
-    c.set("session", session.session);
-    c.set("account", { ...account, session: session.session });
+    c.set("account", { ...account, session: sessionObj });
 
     return next();
   };
