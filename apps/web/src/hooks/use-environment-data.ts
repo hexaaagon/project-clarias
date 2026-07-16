@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RealtimePostgresInsertPayload } from "@supabase/supabase-js";
 import type { EnvironmentData } from "@/types/models";
-import { getEnvironmentData } from "@/services/mock-data";
-import { supabase } from "@/lib/api-client";
+import { rpc, supabase } from "@/lib/api-client";
 
 const POLL_INTERVAL_MS = 30_000;
 
@@ -55,8 +54,14 @@ export function useEnvironmentData(): EnvironmentHookResult {
 
   const fetchData = useCallback(async () => {
     try {
-      const result = await getEnvironmentData();
-      setData(result);
+      const res = await rpc.dashboard.$get();
+      if (!res.ok) throw new Error("Failed to fetch dashboard data");
+      const json = (await res.json()) as any;
+      if (json.success && json.data.latestEnvironment) {
+        setData(json.data.latestEnvironment);
+      } else {
+        setData(null);
+      }
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to fetch environment data");
@@ -77,7 +82,7 @@ export function useEnvironmentData(): EnvironmentHookResult {
       .channel("environment-realtime")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "environment_readings" },
+        { event: "INSERT", schema: "public", table: "environment_log" },
         (payload: RealtimePostgresInsertPayload<Record<string, unknown>>) => {
           if (payload.new) {
             setData(mapRealtimeRow(payload.new as Record<string, unknown>));

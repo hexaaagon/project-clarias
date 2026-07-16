@@ -2,11 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { HarvestRecord, EnvironmentData, FeedingEvent } from "@/types/models";
-import {
-  getHarvestStats,
-  getEnvironmentData,
-  getFeedingHistory,
-} from "@/services/mock-data";
+import { rpc } from "@/lib/api-client";
 
 interface FeedingSummary {
   totalKg: number;
@@ -24,44 +20,6 @@ export interface FinanceReportData {
   overallYieldPercent: number;
 }
 
-function buildFeedingSummary(events: FeedingEvent[]): FeedingSummary {
-  const byPond: Record<string, number> = {};
-  const byType: Record<string, number> = {};
-  let totalKg = 0;
-
-  for (const e of events) {
-    totalKg += e.amountKg;
-    byPond[e.pondId] = (byPond[e.pondId] ?? 0) + e.amountKg;
-    byType[e.feedType] = (byType[e.feedType] ?? 0) + e.amountKg;
-  }
-
-  return { totalKg, byPond, byType };
-}
-
-function aggregateReport(
-  harvests: HarvestRecord[],
-  environment: EnvironmentData,
-  feeding: FeedingEvent[],
-): FinanceReportData {
-  const feedingSummary = buildFeedingSummary(feeding);
-  const totalEstimatedKg = harvests.reduce((s, h) => s + h.estimatedBiomassKg, 0);
-  const totalActualKg = harvests.reduce((s, h) => s + h.actualYieldKg, 0);
-  const overallYieldPercent =
-    totalEstimatedKg > 0
-      ? Math.round((totalActualKg / totalEstimatedKg) * 1000) / 10
-      : 0;
-
-  return {
-    harvests,
-    environment,
-    feeding,
-    feedingSummary,
-    totalEstimatedKg,
-    totalActualKg,
-    overallYieldPercent,
-  };
-}
-
 interface FinanceHookResult {
   data: FinanceReportData | null;
   loading: boolean;
@@ -77,15 +35,25 @@ export function useFinanceReport(): FinanceHookResult {
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all([getHarvestStats(), getEnvironmentData(), getFeedingHistory()])
-      .then(([harvests, environment, feeding]) => {
-        if (!cancelled) {
-          setData(aggregateReport(harvests, environment, feeding));
+    const generateAndFetch = async () => {
+      try {
+        const res = await rpc.reports.generate.$post({ json: {} });
+        if (!res.ok) throw new Error("Failed to generate report on backend");
+        const json = (await res.json()) as any;
+        if (json.success && json.data && json.data.content) {
+          const parsed = JSON.parse(json.data.content) as FinanceReportData;
+          if (!cancelled) {
+            setData(parsed);
+          }
         }
-      })
-      .finally(() => {
+      } catch (e) {
+        console.error("Failed to generate report:", e);
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    };
+
+    generateAndFetch();
 
     return () => {
       cancelled = true;

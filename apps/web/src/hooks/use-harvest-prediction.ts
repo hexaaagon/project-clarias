@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { HarvestRecord } from "@/types/models";
-import { getHarvestStats } from "@/services/mock-data";
+import { rpc } from "@/lib/api-client";
 
 interface ChartDatum {
   date: string;
@@ -76,24 +76,66 @@ export function useHarvestPrediction(): PredictionResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchHarvestData = useCallback(async (pondId: number) => {
+    try {
+      const res = await rpc.harvest.$get({
+        query: {
+          pondId: String(pondId),
+          limit: 50,
+        },
+      });
+      if (!res.ok) throw new Error("Failed to fetch harvest logs");
+      const json = (await res.json()) as any;
+      if (json.success && json.data) {
+        const mapped: HarvestRecord[] = json.data.map((log: any) => ({
+          date: log.timestamp.split("T")[0],
+          estimatedBiomassKg: log.estimatedBiomassKg,
+          actualYieldKg: log.actualYieldKg,
+          pondId: String(pondId),
+          species: log.species,
+        }));
+        setRecords(mapped);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to fetch harvest data");
+    }
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
 
-    getHarvestStats()
-      .then((data) => {
-        if (!cancelled) setRecords(data);
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to fetch harvest data");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    const init = async () => {
+      try {
+        const pondsRes = await rpc.ponds.$get();
+        if (!pondsRes.ok) throw new Error("Failed to fetch ponds list");
+        const pondsJson = (await pondsRes.json()) as any;
+        if (pondsJson.success && pondsJson.data && pondsJson.data.length > 0) {
+          const firstPondId = pondsJson.data[0].id;
+          if (!cancelled) {
+            await fetchHarvestData(firstPondId);
+          }
+        } else {
+          if (!cancelled) {
+            setRecords([]);
+          }
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "Failed to initialize harvest prediction");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    init();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [fetchHarvestData]);
 
   const chartData = toChartData(records);
   const nextHarvestEstimate = predictNext(records);
