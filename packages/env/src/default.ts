@@ -6,9 +6,6 @@ export const env = createEnv({
     // Next.js
     ANALYZE: z.string().min(1),
 
-    // Security
-    ENCRYPTION_SECRET_KEY: z.string().min(64).max(64),
-
     // Database
     SUPABASE_DATABASE_SECRET_KEY: z.string().min(1),
     SUPABASE_DATABASE_DIRECT_IPV6: z.string().min(1),
@@ -17,17 +14,8 @@ export const env = createEnv({
 
     // Auth
     BETTER_AUTH_SECRET: z.string().min(1),
-    HCA_CLIENT_ID: z.string().min(1),
-    HCA_CLIENT_SECRET: z.string().min(1),
-    HACKATIME_CLIENT_ID: z.string().min(1),
-    HACKATIME_CLIENT_SECRET: z.string().min(1),
-
-    // Slack Bot Integration
-    SLACK_BOT_BACKEND_API: z.string().min(1),
-    SLACK_BOT_BACKEND_TOKEN: z.string().min(64).max(64),
-
-    // TOP SECRET ehe ts shi tuff
-    SIGNUP_ACCESS_BYPASS_PREFIX: z.string().optional(),
+    GOOGLE_CLIENT_ID: z.string().min(1),
+    GOOGLE_CLIENT_SECRET: z.string().min(1),
   },
   client: {
     // Next.js
@@ -36,11 +24,6 @@ export const env = createEnv({
     // Supabase (client)
     NEXT_PUBLIC_SUPABASE_URL: z.url(),
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: z.string().min(1),
-
-    // Posthog (client)
-    NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1),
-    NEXT_PUBLIC_POSTHOG_HOST_API: z.string().min(1),
-    NEXT_PUBLIC_POSTHOG_HOST_UI: z.string().min(1),
 
     // Vercel-provided system vars
     NEXT_PUBLIC_VERCEL_ENV: z
@@ -68,18 +51,12 @@ export const env = createEnv({
     NEXT_PUBLIC_VERCEL_GIT_COMMIT_AUTHOR_NAME: z.string().min(1).optional(),
     NEXT_PUBLIC_VERCEL_GIT_PREVIOUS_SHA: z.string().optional(),
     NEXT_PUBLIC_VERCEL_GIT_PULL_REQUEST_ID: z.string().optional(),
-
-    // TOP SECET sigma boy
-    NEXT_PUBLIC_SIGNUP_ACCESS_DISABLED: z.string().optional(),
   },
   // biome-ignore format: you fucked up at formatting ts shi
   experimental__runtimeEnv: {
     NEXT_PUBLIC_APP_URL:                            (process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || "http://localhost:3000").replace(/\/$/, ''),
     NEXT_PUBLIC_SUPABASE_URL:                       process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY:   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY,
-    NEXT_PUBLIC_POSTHOG_KEY:                        process.env.NEXT_PUBLIC_POSTHOG_KEY,
-    NEXT_PUBLIC_POSTHOG_HOST_API:                   process.env.NEXT_PUBLIC_POSTHOG_HOST_API,
-    NEXT_PUBLIC_POSTHOG_HOST_UI:                    process.env.NEXT_PUBLIC_POSTHOG_HOST_UI,
     NEXT_PUBLIC_VERCEL_ENV:                         process.env.NEXT_PUBLIC_VERCEL_ENV,
     NEXT_PUBLIC_VERCEL_TARGET_ENV:                  process.env.NEXT_PUBLIC_VERCEL_TARGET_ENV,
     NEXT_PUBLIC_VERCEL_URL:                         process.env.NEXT_PUBLIC_VERCEL_URL,
@@ -99,6 +76,5 @@ export const env = createEnv({
     NEXT_PUBLIC_VERCEL_GIT_COMMIT_AUTHOR_NAME:      process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_AUTHOR_NAME,
     NEXT_PUBLIC_VERCEL_GIT_PREVIOUS_SHA:            process.env.NEXT_PUBLIC_VERCEL_GIT_PREVIOUS_SHA,
     NEXT_PUBLIC_VERCEL_GIT_PULL_REQUEST_ID:         process.env.NEXT_PUBLIC_VERCEL_GIT_PULL_REQUEST_ID,
-    NEXT_PUBLIC_SIGNUP_ACCESS_DISABLED:             process.env.NEXT_PUBLIC_SIGNUP_ACCESS_DISABLED,
   },
 });

@@ -2,12 +2,10 @@ import { db } from "@project-clarias/database";
 import * as schema from "@project-clarias/database/schema/auth";
 import { supabaseService } from "@project-clarias/database/supabase/service-server";
 import { env } from "@project-clarias/env";
-import { encryptData, encryptPlugin } from "@project-clarias/util/crypto";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
-import { genericOAuth } from "better-auth/plugins";
 import { userRegistration } from "./database";
 
 export const auth = betterAuth({
@@ -16,17 +14,7 @@ export const auth = betterAuth({
     provider: "pg",
     schema,
   }),
-  user: {
-    additionalFields: {
-      encrypted_name: { type: "string", required: true },
-    },
-  },
   account: {
-    accountLinking: {
-      enabled: true,
-      trustedProviders: ["hca", "hackatime"],
-      allowDifferentEmails: true,
-    },
     encryptOAuthTokens: true,
     storeStateStrategy: "database",
   },
@@ -67,105 +55,13 @@ export const auth = betterAuth({
       }
     }),
   },
-  databaseHooks: {
-    user: {
-      create: {
-        before: async (user, _context) => {
-          if (user.name) {
-            user.encrypted_name = await encryptData(user.name);
-            user.name = "encrypted";
-          }
-
-          return { data: user };
-        },
-      },
+  socialProviders: {
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
   plugins: [
-    encryptPlugin(),
-    genericOAuth({
-      config: [
-        {
-          providerId: "hca",
-          discoveryUrl:
-            "https://auth.hackclub.com/.well-known/openid-configuration",
-          clientId: env.HCA_CLIENT_ID,
-          clientSecret: env.HCA_CLIENT_SECRET,
-          scopes: [
-            "openid",
-            "email",
-            "name",
-            "profile",
-            "verification_status",
-            "slack_id",
-          ],
-          authorizationUrlParams: (ctx) => {
-            const loginHint = ctx.body.additionalData?.login_hint as string;
-            const params: Record<string, string> = {};
-
-            if (loginHint) {
-              params.login_hint = loginHint;
-            }
-
-            return params;
-          },
-        },
-        {
-          providerId: "hackatime",
-          clientId: env.HACKATIME_CLIENT_ID,
-          clientSecret: env.HACKATIME_CLIENT_SECRET,
-          authorizationUrl: "https://hackatime.hackclub.com/oauth/authorize",
-          tokenUrl: "https://hackatime.hackclub.com/oauth/token",
-          userInfoUrl: "https://hackatime.hackclub.com/api/v1/authenticated/me",
-          getUserInfo: async (tokens) => {
-            const response = await fetch(
-              "https://hackatime.hackclub.com/api/v1/authenticated/me",
-              {
-                headers: {
-                  Authorization: `Bearer ${tokens.accessToken}`,
-                },
-              },
-            );
-
-            if (!response.ok) {
-              throw new Error("Failed to fetch user info from Hackatime");
-            }
-
-            const data = (await response.json()) as {
-              id: number;
-              emails: string[];
-              slack_id: string | null;
-              github_username: string;
-              trust_factor:
-                | {
-                    trust_level: "yellow";
-                    trust_score: 3;
-                  }
-                | {
-                    trust_level: "green";
-                    trust_score: 2;
-                  }
-                | {
-                    trust_level: "red";
-                    trust_score: 1;
-                  }
-                | {
-                    trust_level: "blue";
-                    trust_score: 0;
-                  };
-            };
-
-            return {
-              id: data.id,
-              email: data.emails[0] || null,
-              name: data.github_username,
-              emailVerified: true,
-            };
-          },
-          scopes: ["profile", "read"],
-        },
-      ],
-    }),
     nextCookies(),
   ],
 });
