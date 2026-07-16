@@ -1,5 +1,5 @@
 {
-  "name": "@project-clarias/rpc-backend",
+  "name": "@project-clarias/rpc",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -7,7 +7,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@project-clarias/rpc-types": "*",
     "hono": "^4.12.25"
   },
   "devDependencies": {

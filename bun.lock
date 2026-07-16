@@ -20,7 +20,7 @@
         "@project-clarias/auth": "*",
         "@project-clarias/database": "*",
         "@project-clarias/env": "*",
-        "@project-clarias/rpc-bot": "*",
+        "@project-clarias/rpc": "*",
         "@project-clarias/shared": "*",
         "hono": "^4.12.25",
         "zod": "^4.4.3",
@@ -42,6 +42,7 @@
       },
       "devDependencies": {
         "@biomejs/biome": "2.2.0",
+        "@project-clarias/rpc": "*",
         "@tailwindcss/postcss": "^4",
         "@types/node": "^20",
         "@types/react": "^19",
@@ -113,37 +114,12 @@
         "typescript": "^5",
       },
     },
-    "packages/rpc/backend": {
-      "name": "@project-clarias/rpc-backend",
+    "packages/rpc": {
+      "name": "@project-clarias/rpc",
       "version": "0.0.0",
       "dependencies": {
-        "@project-clarias/rpc-types": "*",
         "hono": "^4.12.25",
       },
-      "devDependencies": {
-        "@types/bun": "latest",
-      },
-      "peerDependencies": {
-        "typescript": "^5",
-      },
-    },
-    "packages/rpc/bot": {
-      "name": "@project-clarias/rpc-bot",
-      "version": "0.0.0",
-      "dependencies": {
-        "@project-clarias/rpc-types": "*",
-        "hono": "^4.12.25",
-      },
-      "devDependencies": {
-        "@types/bun": "latest",
-      },
-      "peerDependencies": {
-        "typescript": "^5",
-      },
-    },
-    "packages/rpc/types": {
-      "name": "@project-clarias/rpc-types",
-      "version": "0.0.0",
       "devDependencies": {
         "@types/bun": "latest",
       },
@@ -395,11 +371,7 @@
 
     "@project-clarias/env": ["@project-clarias/env@workspace:packages/env"],
 
-    "@project-clarias/rpc-backend": ["@project-clarias/rpc-backend@workspace:packages/rpc/backend"],
-
-    "@project-clarias/rpc-bot": ["@project-clarias/rpc-bot@workspace:packages/rpc/bot"],
-
-    "@project-clarias/rpc-types": ["@project-clarias/rpc-types@workspace:packages/rpc/types"],
+    "@project-clarias/rpc": ["@project-clarias/rpc@workspace:packages/rpc"],
 
     "@project-clarias/shared": ["@project-clarias/shared@workspace:packages/shared"],
 

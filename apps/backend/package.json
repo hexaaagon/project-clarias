@@ -12,7 +12,7 @@
     "@project-clarias/auth": "*",
     "@project-clarias/database": "*",
     "@project-clarias/env": "*",
-    "@project-clarias/rpc-bot": "*",
+    "@project-clarias/rpc": "*",
     "@project-clarias/shared": "*",
     "hono": "^4.12.25",
     "zod": "^4.4.3"

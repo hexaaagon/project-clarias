@@ -12,7 +12,6 @@ export const user = pgTable("user", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
-  encrypted_name: text("encrypted_name").notNull(),
 });
 
 export const session = pgTable(

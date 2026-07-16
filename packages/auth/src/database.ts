@@ -1,10 +1,6 @@
 import { betterFetch } from "@better-fetch/fetch";
 import { db, eq } from "@project-clarias/database";
-import { personalInfo } from "@project-clarias/database/schema/hackclub";
 import { account } from "@project-clarias/database/schema/user";
-import { userInfoSchema } from "@project-clarias/shared/schema/cachet/hca";
-import { profileSchema } from "@project-clarias/shared/schema/cachet/profile";
-import { encryptData } from "@project-clarias/util/crypto";
 import type { User } from "better-auth";
 import { auth } from ".";
 
@@ -19,71 +15,18 @@ export async function userRegistration(user: User) {
     return;
   }
 
-  const hcaApiKey = await auth.api.getAccessToken({
-    body: {
-      providerId: "hca",
-      userId: user.id,
-    },
-  });
-
-  const hcaData = await betterFetch(
-    "https://auth.hackclub.com/oauth/userinfo",
-    {
-      output: userInfoSchema,
-      headers: {
-        Authorization: `Bearer ${hcaApiKey.accessToken}`,
-      },
-    },
-  );
-
-  if (!hcaData.data) {
-    throw new Error(
-      `Failed to fetch user info from HCA: ${hcaData.error?.message ?? "Unknown error"}`,
-    );
-  }
-
-  const profile = await betterFetch(
-    `https://cachet.dunkirk.sh/users/${hcaData.data.slack_id}`,
-    {
-      output: profileSchema,
-    },
-  );
-
-  if (!profile.data || "message" in profile.data) {
-    throw new Error(
-      `Failed to fetch user profile from Cachet: ${profile.error?.message ?? "Unknown error"}`,
-    );
-  }
-
-  // biome-ignore lint/style/noNonNullAssertion: we know this will always return a value since we're inserting a new account
-  const accountData = (
-    await db
-      .insert(account)
-      .values({
-        userId: user.id,
-        email: user.email,
-        slackId: hcaData.data.slack_id,
-        displayName: profile.data.displayName,
-        avatar: profile.data.imageUrl,
-      })
-      .returning()
-  )[0]!;
-
-  const loremData = "lorem ipsum bla bla";
-  const encryptedLoremData = await encryptData(loremData);
-
   // TODO: hack club personal data inserting thing
-  await db.insert(personalInfo).values({
-    id: accountData.id,
-    email: user.email,
-    e_firstName: encryptedLoremData,
-    e_lastName: encryptedLoremData,
-    e_addressOne: encryptedLoremData,
-    e_addressTwo: encryptedLoremData,
-    e_city: encryptedLoremData,
-    e_state: encryptedLoremData,
-    e_country: encryptedLoremData,
-    e_zipCode: encryptedLoremData,
-    e_birthdate: encryptedLoremData,
-  });
+  // await db.insert(personalInfo).values({
+  //   id: accountData.id,
+  //   email: user.email,
+  //   e_firstName: encryptedLoremData,
+  //   e_lastName: encryptedLoremData,
+  //   e_addressOne: encryptedLoremData,
+  //   e_addressTwo: encryptedLoremData,
+  //   e_city: encryptedLoremData,
+  //   e_state: encryptedLoremData,
+  //   e_country: encryptedLoremData,
+  //   e_zipCode: encryptedLoremData,
+  //   e_birthdate: encryptedLoremData,
+  // });
 }

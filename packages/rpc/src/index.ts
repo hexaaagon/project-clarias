@@ -1,5 +1,8 @@
-import type { backendRouter } from "@project-clarias/rpc-types";
 import { hc } from "hono/client";
+import type {
+  AppType as BackendAppType,
+  router as backendRouter,
+} from "../../../apps/backend/src/index";
 
 const baseUrl =
   process.env.DASHBOARD_BACKEND_URL ||
