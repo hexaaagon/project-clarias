@@ -199,7 +199,7 @@ export default function LandingPage() {
         {/* HERO SECTION - HYBRID */}
         <section className="relative flex min-h-[50vh] flex-col">
           {/* Main Grid Wrapper */}
-          <div className="inner relative flex grow flex-col justify-center overflow-hidden border-separator/10 border-x px-4 py-16 transition-all lg:px-16">
+          <div className="inner relative isolate flex grow flex-col justify-center overflow-hidden border-separator/10 border-x px-4 py-16 transition-all lg:px-16">
             {/* The GrainGradient from user's original request */}
             <GrainGradient
               colors={["#700000", "#0080ff", "#f2ebca", "#33cc33"]}
@@ -604,7 +604,7 @@ export default function LandingPage() {
 
             <div className="mt-16 grid w-full max-w-6xl gap-8 lg:grid-cols-2 lg:items-center">
               {/* Chat Interface Mockup */}
-              <div className="relative">
+              <div className="relative isolate">
                 {/* Mascot Peeking Placeholder */}
                 <div className="absolute -top-12 -left-8 -z-20 h-28 w-28 md:-top-32 md:-left-32 md:h-64 md:w-64">
                   <Image
@@ -760,7 +760,7 @@ export default function LandingPage() {
                 </Link>
               </div>
             </section>
-            
+
             <PlusSeparator position={["top-left", "top-right"]} />
           </div>
         </main>
