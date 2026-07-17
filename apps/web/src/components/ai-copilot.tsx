@@ -1,50 +1,78 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useAIStoreState, useAIStoreActions } from "@/lib/ai-cache-store";
 import { rpc } from "@/lib/api-client";
-import { AlertCircle, Bot, BrainCircuit, Loader2, MessageSquare, Sparkles } from "lucide-react";
+import { AlertCircle, Bot, Loader2, Send, Sparkles } from "lucide-react";
 
-// Simple markdown parsing helper
-export function SimpleMarkdown({ content }: { content: string }) {
-  const lines = content.split("\n");
+/**
+ * Parses AI-generated markdown text into structured blocks,
+ * then renders them cleanly without erratic spacing.
+ */
+export function ParsedContent({ content }: { content: string }) {
+  const blocks = content.split(/\n{2,}/);
+
   return (
-    <div className="space-y-1 text-sm text-neutral-700 dark:text-neutral-300">
-      {lines.map((line, idx) => {
-        const clean = line.trim();
-        if (clean.startsWith("###")) {
+    <div className="flex flex-col gap-4">
+      {blocks.map((block, blockIdx) => {
+        const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
+        if (lines.length === 0) return null;
+
+        // Check if all lines are list items
+        const allList = lines.every(
+          (l) => l.startsWith("- ") || l.startsWith("* ") || l.match(/^\d+\.\s/)
+        );
+
+        if (allList) {
           return (
-            <h4 key={idx} className="font-semibold text-neutral-900 dark:text-neutral-100 mt-2">
-              {clean.replace("###", "").trim()}
-            </h4>
+            <ul key={blockIdx} className="flex flex-col gap-1.5 pl-4">
+              {lines.map((line, i) => (
+                <li
+                  key={i}
+                  className="list-disc text-sm leading-relaxed text-muted-foreground"
+                >
+                  <InlineFormat text={line.replace(/^[-*]\s*/, "").replace(/^\d+\.\s*/, "")} />
+                </li>
+              ))}
+            </ul>
           );
         }
-        if (clean.startsWith("##")) {
+
+        // Check if first line is a heading
+        const first = lines[0];
+        if (first.startsWith("###")) {
           return (
-            <h3 key={idx} className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mt-3">
-              {clean.replace("##", "").trim()}
-            </h3>
+            <div key={blockIdx} className="flex flex-col gap-1.5">
+              <h4 className="font-montreal font-semibold text-sm text-foreground">
+                {first.replace(/^#{1,3}\s*/, "")}
+              </h4>
+              {lines.slice(1).map((l, i) => (
+                <p key={i} className="text-sm leading-relaxed text-muted-foreground">
+                  <InlineFormat text={l} />
+                </p>
+              ))}
+            </div>
           );
         }
-        if (clean.startsWith("-") || clean.startsWith("*")) {
+        if (first.startsWith("##")) {
           return (
-            <li key={idx} className="ml-4 list-disc">
-              {clean.replace(/^[-*]\s*/, "")}
-            </li>
+            <div key={blockIdx} className="flex flex-col gap-1.5">
+              <h3 className="font-montreal font-semibold text-base text-foreground">
+                {first.replace(/^#{1,2}\s*/, "")}
+              </h3>
+              {lines.slice(1).map((l, i) => (
+                <p key={i} className="text-sm leading-relaxed text-muted-foreground">
+                  <InlineFormat text={l} />
+                </p>
+              ))}
+            </div>
           );
         }
-        if (!clean) return <div key={idx} className="h-1" />;
-        const parts = clean.split("**");
+
+        // Default: paragraph
         return (
-          <p key={idx}>
-            {parts.map((part, i) =>
-              i % 2 === 1 ? (
-                <strong key={i} className="font-semibold text-neutral-950 dark:text-neutral-50">
-                  {part}
-                </strong>
-              ) : (
-                part
-              ),
-            )}
+          <p key={blockIdx} className="text-sm leading-relaxed text-muted-foreground">
+            <InlineFormat text={lines.join(" ")} />
           </p>
         );
       })}
@@ -52,109 +80,54 @@ export function SimpleMarkdown({ content }: { content: string }) {
   );
 }
 
-export function AICopilotSection() {
-  const [pondId, setPondId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+/** Handles **bold** inline formatting */
+function InlineFormat({ text }: { text: string }) {
+  const parts = text.split("**");
+  if (parts.length <= 1) return <>{text}</>;
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <strong key={i} className="font-semibold text-foreground">
+            {part}
+          </strong>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+}
 
-  // States for AI responses
-  const [dashboardSummary, setDashboardSummary] = useState<any>(null);
-  const [dailySummary, setDailySummary] = useState<string>("");
-  const [recommendations, setRecommendations] = useState<string[]>([]);
+/** Backward-compatible alias for biomass-chart */
+export const SimpleMarkdown = ParsedContent;
+
+export function AICopilotSection() {
+  const dashboardSummary = useAIStoreState((s) => s.dashboardSummary);
+  const dailySummary = useAIStoreState((s) => s.dailySummary);
+  const recommendations = useAIStoreState((s) => s.recommendations);
+  const pondId = useAIStoreState((s) => s.pondId);
+  const loading = useAIStoreState((s) => s.loading);
+  const error = useAIStoreState((s) => s.error);
+
+  const initializeAI = useAIStoreActions((a) => a.initializeAI);
+
   const [chatQuestion, setChatQuestion] = useState("");
   const [chatAnswer, setChatAnswer] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
 
-  // Fetch all AI data for the active pond
-  const fetchAIData = useCallback(async (activeId: number) => {
-    try {
-      setError(null);
-      
-      // 1. Fetch dashboard summary
-      const summaryRes = await rpc.ai["dashboard-summary"].$post({
-        json: { pondId: activeId },
-      });
-      if (!summaryRes.ok) throw new Error();
-      const summaryJson = (await summaryRes.json()) as any;
-      if (summaryJson.success) {
-        setDashboardSummary(summaryJson.data);
-      }
-
-      // 2. Fetch daily summary
-      const dailyRes = await rpc.ai["daily-summary"].$post({
-        json: { pondId: activeId },
-      });
-      if (dailyRes.ok) {
-        const dailyJson = (await dailyRes.json()) as any;
-        if (dailyJson.success) {
-          setDailySummary(dailyJson.data.summary);
-        }
-      }
-
-      // 3. Fetch recommendations
-      const recsRes = await rpc.ai.recommendations.$post({
-        json: { pondId: activeId },
-      });
-      if (recsRes.ok) {
-        const recsJson = (await recsRes.json()) as any;
-        if (recsJson.success) {
-          setRecommendations(recsJson.data.recommendations);
-        }
-      }
-    } catch (e) {
-      setError("AI service is currently unavailable.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    let cancelled = false;
-
-    const init = async () => {
-      try {
-        const pondsRes = await rpc.ponds.$get();
-        if (!pondsRes.ok) throw new Error();
-        const pondsJson = (await pondsRes.json()) as any;
-        if (pondsJson.success && pondsJson.data && pondsJson.data.length > 0) {
-          const firstPondId = pondsJson.data[0].id;
-          if (!cancelled) {
-            setPondId(firstPondId);
-            await fetchAIData(firstPondId);
-          }
-        } else {
-          if (!cancelled) {
-            setError("No active ponds found to analyze.");
-            setLoading(false);
-          }
-        }
-      } catch {
-        if (!cancelled) {
-          setError("AI service is currently unavailable.");
-          setLoading(false);
-        }
-      }
-    };
-
-    init();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [fetchAIData]);
+    initializeAI();
+  }, [initializeAI]);
 
   const handleAskAI = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pondId || !chatQuestion.trim()) return;
-
     setChatLoading(true);
     setChatAnswer("");
     try {
       const res = await rpc.ai.chat.$post({
-        json: {
-          pondId,
-          question: chatQuestion,
-        },
+        json: { pondId, question: chatQuestion },
       });
       if (!res.ok) throw new Error();
       const json = (await res.json()) as any;
@@ -172,149 +145,154 @@ export function AICopilotSection() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-neutral-500 p-4 border border-dashed rounded-md">
-        <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
-        <span>Initializing Project Clarias AI Copilot...</span>
+      <div className="flex items-center gap-2 p-4 font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+        <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+        Loading AI insights...
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/30 dark:bg-red-950/20 dark:text-red-400">
-        <AlertCircle className="h-5 w-5 shrink-0" />
-        <span>{error}</span>
+      <div className="flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+        <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+        <span className="font-mono text-xs text-red-600">{error}</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* 1. Main AI Copilot Overview Card */}
+    <div className="flex flex-col gap-6">
+      {/* Dashboard Summary — headline + stats */}
       {dashboardSummary && (
-        <div className="rounded-lg border border-indigo-200 bg-indigo-50/30 p-6 dark:border-indigo-900/30 dark:bg-indigo-950/10">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <BrainCircuit className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-              <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
-                Project Clarias AI Copilot
-              </h2>
+        <div className="flex flex-col gap-5">
+          {/* Health stats row */}
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div className="flex flex-col rounded-xl border border-separator/10 bg-muted/20 p-5">
+              <span className="font-mono font-medium text-[10px] text-muted-foreground uppercase tracking-wider">
+                Health Score
+              </span>
+              <p className="mt-2 font-bold font-mono text-3xl tracking-tight text-foreground">
+                {dashboardSummary.healthScore}
+                <span className="ml-1 font-normal text-sm opacity-60">%</span>
+              </p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <span className="text-xs uppercase tracking-wide text-neutral-500">Pond Health</span>
-                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                  {dashboardSummary.healthScore}%
-                </p>
-              </div>
-              <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-800" />
-              <div className="text-right">
-                <span className="text-xs uppercase tracking-wide text-neutral-500">Confidence</span>
-                <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-                  {dashboardSummary.confidence}%
-                </p>
-              </div>
+            <div className="flex flex-col rounded-xl border border-separator/10 bg-muted/20 p-5">
+              <span className="font-mono font-medium text-[10px] text-muted-foreground uppercase tracking-wider">
+                Confidence
+              </span>
+              <p className="mt-2 font-bold font-mono text-3xl tracking-tight text-foreground">
+                {dashboardSummary.confidence}
+                <span className="ml-1 font-normal text-sm opacity-60">%</span>
+              </p>
             </div>
           </div>
 
-          <div className="mt-4 space-y-2">
-            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-              "{dashboardSummary.headline}"
+          {/* Headline + summary text */}
+          <div className="flex flex-col gap-2">
+            <p className="font-montreal font-semibold text-sm text-foreground">
+              &ldquo;{dashboardSummary.headline}&rdquo;
             </p>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               {dashboardSummary.summary}
             </p>
           </div>
 
+          {/* Top recommendation */}
           {dashboardSummary.recommendations?.length > 0 && (
-            <div className="mt-4 rounded-md bg-white p-4 shadow-sm border border-neutral-100 dark:bg-neutral-900 dark:border-neutral-800">
-              <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600 uppercase tracking-wide dark:text-indigo-400">
-                <Sparkles className="h-4.5 w-4.5" />
-                <span>Top Recommendation</span>
+            <div className="flex items-start gap-3 rounded-xl border border-separator/10 bg-muted/20 p-4">
+              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
+              <div className="flex flex-col gap-1">
+                <span className="font-mono font-medium text-[10px] text-muted-foreground uppercase tracking-wider">
+                  Top Recommendation
+                </span>
+                <p className="text-sm leading-relaxed text-foreground">
+                  {dashboardSummary.recommendations[0]}
+                </p>
               </div>
-              <p className="mt-1 text-sm text-neutral-800 dark:text-neutral-200">
-                {dashboardSummary.recommendations[0]}
-              </p>
             </div>
           )}
         </div>
       )}
 
-      {/* Grid containing Daily Summary, Recommendations, and Ask AI Panel */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        
-        {/* Daily Summary */}
-        <div className="rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-500 mb-3">
-            Today's Summary
-          </h3>
+      {/* Two-column row: Today's Summary + Pond Actions */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {/* Today's Summary */}
+        <div className="flex flex-col rounded-xl border border-separator/10 bg-muted/20 p-5">
+          <span className="mb-4 font-mono font-medium text-[10px] text-muted-foreground uppercase tracking-wider">
+            Today&apos;s Summary
+          </span>
           {dailySummary ? (
-            <SimpleMarkdown content={dailySummary} />
+            <ParsedContent content={dailySummary} />
           ) : (
-            <p className="text-sm text-neutral-500">No daily logs compiled.</p>
+            <p className="text-sm text-muted-foreground">No daily logs compiled.</p>
           )}
         </div>
 
-        {/* Bullet Recommendations List */}
-        <div className="rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-500 mb-3">
+        {/* Pond Actions */}
+        <div className="flex flex-col rounded-xl border border-separator/10 bg-muted/20 p-5">
+          <span className="mb-4 font-mono font-medium text-[10px] text-muted-foreground uppercase tracking-wider">
             Pond Actions
-          </h3>
+          </span>
           {recommendations.length > 0 ? (
-            <ul className="space-y-2">
+            <ul className="flex flex-col gap-3">
               {recommendations.map((rec, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
-                  <span className="text-indigo-500 font-bold shrink-0">•</span>
-                  <span>{rec}</span>
+                <li
+                  key={i}
+                  className="flex items-start gap-3 rounded-lg border border-separator/10 bg-background p-3 text-sm leading-relaxed text-foreground"
+                >
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
+                  {rec}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-neutral-500">No recommended actions available.</p>
+            <p className="text-sm text-muted-foreground">No recommended actions available.</p>
           )}
         </div>
+      </div>
 
-        {/* Ask AI Panel */}
-        <div className="rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900 flex flex-col justify-between">
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-500 mb-3 flex items-center gap-1.5">
-              <Bot className="h-4.5 w-4.5 text-indigo-500" />
-              Ask Clarias Copilot
-            </h3>
-            
-            <form onSubmit={handleAskAI} className="space-y-3">
-              <textarea
-                value={chatQuestion}
-                onChange={(e) => setChatQuestion(e.target.value)}
-                placeholder="Ask anything about your pond..."
-                className="w-full min-h-[80px] rounded-md border border-neutral-200 p-2.5 text-sm outline-none focus:border-indigo-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50"
-              />
-              <button
-                type="submit"
-                disabled={chatLoading || !chatQuestion.trim()}
-                className="w-full flex items-center justify-center gap-1.5 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-              >
-                {chatLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Analyzing...</span>
-                  </>
-                ) : (
-                  <>
-                    <MessageSquare className="h-4.5 w-4.5" />
-                    <span>Ask AI</span>
-                  </>
-                )}
-              </button>
-            </form>
+      {/* Ask AI */}
+      <div className="flex flex-col gap-4 rounded-xl border border-separator/10 bg-muted/20 p-5">
+        <div className="flex items-center gap-2">
+          <Bot className="h-4 w-4 text-blue-500" />
+          <span className="font-mono font-medium text-[10px] text-muted-foreground uppercase tracking-wider">
+            Ask Clarias Copilot
+          </span>
+        </div>
+
+        <form onSubmit={handleAskAI} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <textarea
+            value={chatQuestion}
+            onChange={(e) => setChatQuestion(e.target.value)}
+            placeholder="Ask anything about your pond..."
+            rows={2}
+            className="flex-1 resize-none rounded-lg border border-separator/10 bg-background p-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            disabled={chatLoading || !chatQuestion.trim()}
+            className="flex shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+          >
+            {chatLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <Send className="h-4 w-4" />
+                Ask AI
+              </>
+            )}
+          </button>
+        </form>
+
+        {chatAnswer && (
+          <div className="rounded-lg border border-separator/10 bg-background p-4">
+            <ParsedContent content={chatAnswer} />
           </div>
-
-          {chatAnswer && (
-            <div className="mt-4 rounded-md border border-neutral-100 bg-neutral-50/50 p-3.5 dark:border-neutral-800 dark:bg-neutral-950/20 max-h-[180px] overflow-y-auto">
-              <SimpleMarkdown content={chatAnswer} />
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );

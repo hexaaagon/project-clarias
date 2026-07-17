@@ -87,53 +87,49 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="flex flex-col gap-8 lg:col-span-2">
-          <section className="relative overflow-hidden rounded-xl border border-separator/10 bg-background p-6 shadow-sm">
-            <div className="mb-6 flex items-center justify-between border-separator/10 border-b pb-4">
-              <div>
-                <h2 className="font-bold font-montreal text-xl text-foreground">
-                  Harvest Performance
-                </h2>
-                <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
-                  Estimated vs Actual Yield Tracking
-                </p>
-              </div>
-            </div>
-            <BiomassChart />
-            <PlusSeparator position={["top-left", "top-right"]} />
-          </section>
-
-          <section className="relative overflow-hidden rounded-xl border border-separator/10 bg-background p-6 shadow-sm">
-            <div className="mb-6 flex items-center justify-between border-separator/10 border-b pb-4">
-              <div>
-                <h2 className="font-bold font-montreal text-xl text-foreground">
-                  Environment Snapshot
-                </h2>
-                <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
-                  Realtime Sensor Telemetry
-                </p>
-              </div>
-            </div>
-            <EnvironmentMonitor />
-            <PlusSeparator position={["top-left", "top-right"]} />
-          </section>
-        </div>
-
-        <div className="flex flex-col lg:col-span-1">
-          <section className="relative h-full overflow-hidden rounded-xl border border-separator/10 bg-muted/10 p-6 shadow-sm">
-            <div className="mb-6 border-separator/10 border-b pb-4">
+      <div className="flex flex-col gap-8">
+        <section className="relative overflow-hidden rounded-xl border border-separator/10 bg-background p-6 shadow-sm">
+          <div className="mb-6 flex items-center justify-between border-separator/10 border-b pb-4">
+            <div>
               <h2 className="font-bold font-montreal text-xl text-foreground">
-                Clarie AI Copilot
+                Harvest Performance
               </h2>
               <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
-                Your Smart Pond Assistant
+                Estimated vs Actual Yield Tracking
               </p>
             </div>
-            <AICopilotSection />
-            <PlusSeparator position={["top-left", "top-right"]} />
-          </section>
-        </div>
+          </div>
+          <BiomassChart />
+          <PlusSeparator position={["top-left", "top-right"]} />
+        </section>
+
+        <section className="relative overflow-hidden rounded-xl border border-separator/10 bg-background p-6 shadow-sm">
+          <div className="mb-6 flex items-center justify-between border-separator/10 border-b pb-4">
+            <div>
+              <h2 className="font-bold font-montreal text-xl text-foreground">
+                Environment Snapshot
+              </h2>
+              <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+                Realtime Sensor Telemetry
+              </p>
+            </div>
+          </div>
+          <EnvironmentMonitor />
+          <PlusSeparator position={["top-left", "top-right"]} />
+        </section>
+
+        <section className="relative overflow-hidden rounded-xl border border-separator/10 bg-background p-6 shadow-sm">
+          <div className="mb-6 border-separator/10 border-b pb-4">
+            <h2 className="font-bold font-montreal text-xl text-foreground">
+              Clarie AI
+            </h2>
+            <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+              Your Smart Pond Assistant
+            </p>
+          </div>
+          <AICopilotSection />
+          <PlusSeparator position={["top-left", "top-right"]} />
+        </section>
       </div>
     </div>
   );

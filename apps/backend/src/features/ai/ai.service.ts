@@ -1,18 +1,19 @@
-import { db, eq, asc } from "@project-clarias/database";
+import { asc, db, eq } from "@project-clarias/database";
 import { environmentLog } from "@project-clarias/database/schema/aquaculture";
-import { openrouter, DEFAULT_OPENROUTER_MODEL } from "../../lib/openrouter";
-import { PondService } from "../ponds/service";
+import { env } from "@project-clarias/env";
+import { DEFAULT_OPENROUTER_MODEL, openrouter } from "../../lib/openrouter";
 import { EnvironmentService } from "../environment/service";
 import { FeedingService } from "../feeding/service";
 import { HarvestService } from "../harvest/service";
+import { PondService } from "../ponds/service";
 import { AIContextBuilder } from "./ai.context";
 import {
-  SYSTEM_PROMPT,
+  buildChartPrompt,
   buildChatPrompt,
+  buildDailySummaryPrompt,
   buildDashboardPrompt,
   buildRecommendationPrompt,
-  buildChartPrompt,
-  buildDailySummaryPrompt,
+  SYSTEM_PROMPT,
 } from "./ai.prompts";
 import type { DashboardSummaryResponse } from "./ai.types";
 
@@ -23,7 +24,10 @@ export class AIService {
   /**
    * Constructs a telemetry context string for the specified pond.
    */
-  static async buildPondContext(pondId: number, userId: number): Promise<string | null> {
+  static async buildPondContext(
+    pondId: number,
+    userId: number,
+  ): Promise<string | null> {
     const pondItem = await PondService.getById(pondId, userId);
     if (!pondItem) return null;
 
@@ -35,7 +39,12 @@ export class AIService {
       .orderBy(asc(environmentLog.timestamp))
       .limit(1);
     const firstTimestamp = oldestEnv[0]?.timestamp || new Date();
-    const ageDays = Math.max(1, Math.round((Date.now() - firstTimestamp.getTime()) / (1000 * 60 * 60 * 24)));
+    const ageDays = Math.max(
+      1,
+      Math.round(
+        (Date.now() - firstTimestamp.getTime()) / (1000 * 60 * 60 * 24),
+      ),
+    );
 
     // Fetch latest environment log
     const envLogs = await EnvironmentService.getLogs(pondId, userId, 1);
@@ -80,7 +89,10 @@ export class AIService {
           temperature: latestEnv.temperature,
           pH: latestEnv.pH,
           dissolvedOxygen: latestEnv.dissolvedOxygen,
-          waterLevelPercent: Math.min(100, Math.max(0, Math.round((latestEnv.waterLevel / 1.5) * 100))),
+          waterLevelPercent: Math.min(
+            100,
+            Math.max(0, Math.round((latestEnv.waterLevel / 1.5) * 100)),
+          ),
         }
       : null;
 
@@ -116,9 +128,13 @@ export class AIService {
   /**
    * Sends user question and pond context to OpenRouter chat completion.
    */
-  static async sendChat(pondId: number, question: string, userId: number): Promise<string> {
+  static async sendChat(
+    pondId: number,
+    question: string,
+    userId: number,
+  ): Promise<string> {
     try {
-      const context = await this.buildPondContext(pondId, userId);
+      const context = await AIService.buildPondContext(pondId, userId);
       if (!context) throw new Error("Unauthorized or pond does not exist");
 
       const prompt = buildChatPrompt(context, question);
@@ -133,20 +149,26 @@ export class AIService {
       })) as any;
 
       const responseText = completion.choices?.[0]?.message?.content;
-      if (!responseText) throw new Error("Empty response received from LLM provider");
+      if (!responseText)
+        throw new Error("Empty response received from LLM provider");
 
       return responseText;
     } catch (e) {
-      throw new Error(`AI Chat completion failed: ${e instanceof Error ? e.message : String(e)}`);
+      throw new Error(
+        `AI Chat completion failed: ${e instanceof Error ? e.message : String(e)}`,
+      );
     }
   }
 
   /**
    * Generates pond health statistics and summaries in JSON format.
    */
-  static async generateDashboardSummary(pondId: number, userId: number): Promise<DashboardSummaryResponse> {
+  static async generateDashboardSummary(
+    pondId: number,
+    userId: number,
+  ): Promise<DashboardSummaryResponse> {
     try {
-      const context = await this.buildPondContext(pondId, userId);
+      const context = await AIService.buildPondContext(pondId, userId);
       if (!context) throw new Error("Unauthorized or pond does not exist");
 
       const prompt = buildDashboardPrompt(context);
@@ -161,10 +183,14 @@ export class AIService {
       })) as any;
 
       let responseText = completion.choices?.[0]?.message?.content;
-      if (!responseText) throw new Error("Empty response received from LLM provider");
+      if (!responseText)
+        throw new Error("Empty response received from LLM provider");
 
       // Strip markdown JSON codeblock markers if present
-      responseText = responseText.replace(/```json\s*/gi, "").replace(/```\s*$/g, "").trim();
+      responseText = responseText
+        .replace(/```json\s*/gi, "")
+        .replace(/```\s*$/g, "")
+        .trim();
 
       try {
         const parsed = JSON.parse(responseText);
@@ -173,23 +199,30 @@ export class AIService {
           headline: String(parsed.headline ?? "Pond analysis completed"),
           summary: String(parsed.summary ?? "Review sensor configurations."),
           issues: Array.isArray(parsed.issues) ? parsed.issues : [],
-          recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations : [],
+          recommendations: Array.isArray(parsed.recommendations)
+            ? parsed.recommendations
+            : [],
           confidence: Number(parsed.confidence ?? 90),
         };
       } catch {
         throw new Error("Failed to parse JSON response from LLM");
       }
     } catch (e) {
-      throw new Error(`AI Dashboard summary generation failed: ${e instanceof Error ? e.message : String(e)}`);
+      throw new Error(
+        `AI Dashboard summary generation failed: ${e instanceof Error ? e.message : String(e)}`,
+      );
     }
   }
 
   /**
    * Generates formatted recommended action list for pond health.
    */
-  static async generateRecommendations(pondId: number, userId: number): Promise<string[]> {
+  static async generateRecommendations(
+    pondId: number,
+    userId: number,
+  ): Promise<string[]> {
     try {
-      const context = await this.buildPondContext(pondId, userId);
+      const context = await AIService.buildPondContext(pondId, userId);
       if (!context) throw new Error("Unauthorized or pond does not exist");
 
       const prompt = buildRecommendationPrompt(context);
@@ -204,18 +237,26 @@ export class AIService {
       })) as any;
 
       let responseText = completion.choices?.[0]?.message?.content;
-      if (!responseText) throw new Error("Empty response received from LLM provider");
+      if (!responseText)
+        throw new Error("Empty response received from LLM provider");
 
-      responseText = responseText.replace(/```json\s*/gi, "").replace(/```\s*$/g, "").trim();
+      responseText = responseText
+        .replace(/```json\s*/gi, "")
+        .replace(/```\s*$/g, "")
+        .trim();
 
       try {
         const parsed = JSON.parse(responseText);
-        return Array.isArray(parsed.recommendations) ? parsed.recommendations : [];
+        return Array.isArray(parsed.recommendations)
+          ? parsed.recommendations
+          : [];
       } catch {
         throw new Error("Failed to parse JSON recommendations from LLM");
       }
     } catch (e) {
-      throw new Error(`AI Recommendations generation failed: ${e instanceof Error ? e.message : String(e)}`);
+      throw new Error(
+        `AI Recommendations generation failed: ${e instanceof Error ? e.message : String(e)}`,
+      );
     }
   }
 
@@ -226,10 +267,10 @@ export class AIService {
     pondId: number,
     chartName: string,
     history: Record<string, unknown>[],
-    userId: number
+    userId: number,
   ): Promise<string> {
     try {
-      const context = await this.buildPondContext(pondId, userId);
+      const context = await AIService.buildPondContext(pondId, userId);
       if (!context) throw new Error("Unauthorized or pond does not exist");
 
       const historyStr = JSON.stringify(history, null, 2);
@@ -245,20 +286,26 @@ export class AIService {
       })) as any;
 
       const responseText = completion.choices?.[0]?.message?.content;
-      if (!responseText) throw new Error("Empty response received from LLM provider");
+      if (!responseText)
+        throw new Error("Empty response received from LLM provider");
 
       return responseText;
     } catch (e) {
-      throw new Error(`AI Chart explanation failed: ${e instanceof Error ? e.message : String(e)}`);
+      throw new Error(
+        `AI Chart explanation failed: ${e instanceof Error ? e.message : String(e)}`,
+      );
     }
   }
 
   /**
    * Generates a concise daily overview summary.
    */
-  static async generateDailySummary(pondId: number, userId: number): Promise<string> {
+  static async generateDailySummary(
+    pondId: number,
+    userId: number,
+  ): Promise<string> {
     try {
-      const context = await this.buildPondContext(pondId, userId);
+      const context = await AIService.buildPondContext(pondId, userId);
       if (!context) throw new Error("Unauthorized or pond does not exist");
 
       const prompt = buildDailySummaryPrompt(context);
@@ -273,12 +320,15 @@ export class AIService {
       })) as any;
 
       const responseText = completion.choices?.[0]?.message?.content;
-      if (!responseText) throw new Error("Empty response received from LLM provider");
+      if (!responseText)
+        throw new Error("Empty response received from LLM provider");
 
       return responseText;
     } catch (e) {
       console.error("[AI Service] Daily summary generation error:", e);
-      throw new Error(`AI Daily summary generation failed: ${e instanceof Error ? e.message : String(e)}`);
+      throw new Error(
+        `AI Daily summary generation failed: ${e instanceof Error ? e.message : String(e)}`,
+      );
     }
   }
 
@@ -288,7 +338,9 @@ export class AIService {
   static async healthCheck() {
     let openrouterReachable = false;
     try {
-      const res = await fetch("https://openrouter.ai/api/v1/models", { signal: AbortSignal.timeout(5000) });
+      const res = await fetch("https://openrouter.ai/api/v1/models", {
+        signal: AbortSignal.timeout(5000),
+      });
       openrouterReachable = res.ok;
     } catch (e) {
       console.error("[AI Service] Health check reachability test failed:", e);
@@ -297,7 +349,7 @@ export class AIService {
     return {
       provider: "openrouter",
       model: DEFAULT_OPENROUTER_MODEL,
-      apiKeyLoaded: !!process.env.OPENROUTER_API_KEY,
+      apiKeyLoaded: env.OPENROUTER_API_KEY,
       sdkInitialized: !!openrouter,
       openrouterReachable,
     };
@@ -308,7 +360,10 @@ export class AIService {
    */
   static async testCompletion() {
     try {
-      console.log("[AI Service] Testing OpenRouter completion with model:", DEFAULT_OPENROUTER_MODEL);
+      console.log(
+        "[AI Service] Testing OpenRouter completion with model:",
+        DEFAULT_OPENROUTER_MODEL,
+      );
       const completion = (await openrouter.chat.send({
         chatRequest: {
           model: DEFAULT_OPENROUTER_MODEL,
@@ -316,7 +371,10 @@ export class AIService {
         },
       })) as any;
 
-      console.log("[AI Service] Received raw completion response:", JSON.stringify(completion));
+      console.log(
+        "[AI Service] Received raw completion response:",
+        JSON.stringify(completion),
+      );
 
       return {
         rawResponse: completion,
