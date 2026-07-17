@@ -16,7 +16,10 @@ export function SidebarNav() {
   }
 
   return (
-    <nav className="flex flex-1 flex-col gap-1 p-2">
+    <nav className="flex flex-1 flex-col gap-0.5 p-3">
+      <span className="mb-2 px-3 font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+        Navigation
+      </span>
       {NAV_ITEMS.map((item) => {
         const isActive =
           item.href === "/"
@@ -28,25 +31,34 @@ export function SidebarNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "group flex items-center gap-3 rounded-md px-3 py-2 font-medium text-sm transition-all duration-200",
               isActive
-                ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-50"
-                : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
+                ? "border border-blue-500/20 bg-blue-500/10 text-blue-600 shadow-sm"
+                : "border border-transparent text-muted-foreground hover:border-separator/10 hover:bg-muted/20 hover:text-foreground"
             )}
           >
-            <item.icon className="h-4 w-4 shrink-0" />
-            <span>{item.label}</span>
+            <item.icon
+              className={cn(
+                "h-4 w-4 shrink-0 transition-colors",
+                isActive ? "text-blue-600" : "text-muted-foreground group-hover:text-foreground"
+              )}
+            />
+            <span className="font-mono text-[13px] tracking-tight">
+              {item.label}
+            </span>
           </Link>
         );
       })}
 
+      <div className="mx-3 my-3 border-separator/10 border-t" />
+
       <button
         type="button"
         onClick={handleSignOut}
-        className="mt-auto flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
+        className="group flex items-center gap-3 rounded-md border border-transparent px-3 py-2 font-medium text-sm text-muted-foreground transition-all duration-200 hover:border-red-500/10 hover:bg-red-500/5 hover:text-red-600"
       >
-        <LogOut className="h-4 w-4 shrink-0" />
-        <span>Sign out</span>
+        <LogOut className="h-4 w-4 shrink-0 transition-colors group-hover:text-red-600" />
+        <span className="font-mono text-[13px] tracking-tight">Sign out</span>
       </button>
     </nav>
   );

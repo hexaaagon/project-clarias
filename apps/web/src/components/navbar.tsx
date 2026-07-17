@@ -1,4 +1,5 @@
 "use client";
+
 import { Slot } from "@radix-ui/react-slot";
 import { Undo, Waves } from "lucide-react";
 import Link from "next/link";
@@ -74,7 +75,10 @@ export default function NavbarClient() {
         </div>
       )}
       <div
-        className={`fixed top-0 right-0 left-0 z-50 h-[var(--navbar-height)] border-separator/10 border-b p-4 backdrop-blur-sm transition duration-300 ${!isAtTop && "bg-background/50 dark:bg-background/30"}`}
+        className={cn(
+          "fixed top-0 right-0 left-0 z-50 h-[var(--navbar-height)] border-separator/10 border-b p-4 backdrop-blur-sm transition duration-300",
+          !isAtTop && "bg-background/50"
+        )}
       >
         <div className="inner flex items-center justify-between md:px-8">
           {matchPath(pathname, separatorItems) && (
@@ -113,7 +117,6 @@ export default function NavbarClient() {
                         });
                       }}
                     >
-                      {/** biome-ignore lint/a11y/noSvgWithoutTitle: there's no thing in the lucide icon package */}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -131,7 +134,7 @@ export default function NavbarClient() {
                       <span className="sr-only">Toggle Menu</span>
                     </Button>
                   </DrawerTrigger>
-                  <DrawerContent className="p-0">
+                  <DrawerContent className="border-separator/10 bg-background/80 p-0 backdrop-blur-xl">
                     <DrawerTitle className="sr-only">
                       Navigation Menu
                     </DrawerTitle>
@@ -150,7 +153,7 @@ export default function NavbarClient() {
                                   value: item.title.toLowerCase(),
                                 });
                               }}
-                              className="font-montreal text-2xl"
+                              className="font-montreal text-2xl transition-colors hover:text-blue-600"
                             >
                               {item.title}
                             </Link>
@@ -159,9 +162,9 @@ export default function NavbarClient() {
                           isInLabsBreakpoint &&
                           tree.children.length > 0 && (
                             <>
-                              {isMobile && <Separator className="my-2" />}
+                              {isMobile && <Separator className="my-2 bg-separator/10" />}
                               <div>
-                                <h2 className="mt-4 mb-2 font-medium text-muted-foreground text-sm">
+                                <h2 className="mt-4 mb-2 font-mono font-medium text-muted-foreground text-[10px] uppercase tracking-wider">
                                   Sections
                                 </h2>
                                 {TOP_LEVEL_SECTIONS.map(({ name, href }) => {
@@ -171,7 +174,7 @@ export default function NavbarClient() {
                                       data-active={pathname === href}
                                       className={cn(
                                         sidebarMenuButtonVariants(),
-                                        "after:-inset-y-1 relative h-[30px] min-w-1/2 overflow-visible border border-transparent font-medium text-[0.8rem] after:absolute after:inset-x-0 after:z-0 after:rounded-md data-[active=true]:border-accent data-[active=true]:bg-accent",
+                                        "after:-inset-y-1 relative h-[30px] min-w-1/2 overflow-visible border border-transparent font-medium text-[0.8rem] after:absolute after:inset-x-0 after:z-0 after:rounded-md data-[active=true]:border-blue-500/20 data-[active=true]:bg-blue-500/10 data-[active=true]:text-blue-600",
                                       )}
                                     >
                                       <Link
@@ -201,7 +204,7 @@ export default function NavbarClient() {
 
                                 return (
                                   <div key={item.$id}>
-                                    <h2 className="mt-4 mb-2 font-medium text-muted-foreground text-sm">
+                                    <h2 className="mt-4 mb-2 font-mono font-medium text-muted-foreground text-[10px] uppercase tracking-wider">
                                       {item.name}
                                     </h2>
                                     {item.type === "folder" && (
@@ -219,7 +222,7 @@ export default function NavbarClient() {
                                                 }
                                                 className={cn(
                                                   sidebarMenuButtonVariants(),
-                                                  "after:-inset-y-1 relative h-[30px] min-w-1/2 overflow-visible border border-transparent font-medium text-[0.8rem] after:absolute after:inset-x-0 after:z-0 after:rounded-md data-[active=true]:border-accent data-[active=true]:bg-accent",
+                                                  "after:-inset-y-1 relative h-[30px] min-w-1/2 overflow-visible border border-transparent font-medium text-[0.8rem] after:absolute after:inset-x-0 after:z-0 after:rounded-md data-[active=true]:border-blue-500/20 data-[active=true]:bg-blue-500/10 data-[active=true]:text-blue-600",
                                                 )}
                                               >
                                                 <Link
@@ -266,8 +269,8 @@ export default function NavbarClient() {
             </Link>
             {matchPath(pathname, backItems) && (
               <Link href="/blog" className="flex h-4 items-center">
-                <Separator orientation="vertical" className="mr-0 ml-2" />
-                <button type="button" className="py-2 pr-2 pl-4">
+                <Separator orientation="vertical" className="mr-0 ml-2 bg-separator/10" />
+                <button type="button" className="py-2 pr-2 pl-4 text-muted-foreground transition hover:text-foreground">
                   <Undo size={16} />
                 </button>
               </Link>
@@ -280,7 +283,7 @@ export default function NavbarClient() {
                   <Link
                     key={item.title}
                     href={item.href}
-                    className="rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-separator/10 hover:text-foreground capitalize"
+                    className="rounded-full px-3 py-1.5 font-medium font-mono text-muted-foreground text-sm capitalize transition-colors hover:bg-separator/10 hover:text-foreground"
                     onClick={() => {
                       posthog.capture("buttonClicked", {
                         location: "navbar",

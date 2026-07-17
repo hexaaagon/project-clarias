@@ -1,6 +1,8 @@
 "use client";
 
+import { AtomIcon } from "@phosphor-icons/react";
 import { Menu, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { SidebarNav } from "@/components/sidebar-nav";
 
@@ -8,37 +10,60 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-full min-h-screen">
-      {/* Desktop sidebar — always visible on lg+ */}
-      <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:border-neutral-200 lg:border-r dark:lg:border-neutral-800">
-        <div className="flex h-14 items-center border-neutral-200 border-b px-4 font-semibold dark:border-neutral-800">
-          Project Clarias
+    <div className="flex h-full min-h-screen bg-background">
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:border-separator/10 lg:border-r lg:bg-muted/20">
+        <div className="flex h-14 items-center gap-2 border-separator/10 border-b px-4">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-montreal font-semibold text-lg tracking-tight"
+          >
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-600 text-white shadow-sm">
+              <AtomIcon className="h-4 w-4" weight="bold" />
+            </div>
+            <span>clarias.</span>
+          </Link>
         </div>
         <SidebarNav />
+        <div className="border-separator/10 border-t p-4">
+          <div className="flex items-center gap-2 rounded-md border border-separator/10 bg-background/60 px-3 py-2 backdrop-blur-sm">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+              Systems Nominal
+            </span>
+          </div>
+        </div>
       </aside>
 
-      {/* Mobile sidebar overlay */}
       {mobileOpen && (
         <>
-          {/* Backdrop */}
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm lg:hidden"
             onClick={() => setMobileOpen(false)}
             onKeyDown={(e) => {
               if (e.key === "Escape") setMobileOpen(false);
             }}
           />
-          {/* Drawer */}
-          <aside className="fixed inset-y-0 left-0 z-50 flex w-60 flex-col bg-white lg:hidden dark:bg-neutral-950">
-            <div className="flex h-14 items-center justify-between border-neutral-200 border-b px-4 font-semibold dark:border-neutral-800">
-              <span>Project Clarias</span>
+          <aside className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-separator/10 border-r bg-background/80 shadow-2xl backdrop-blur-xl lg:hidden">
+            <div className="flex h-14 items-center justify-between border-separator/10 border-b px-4">
+              <Link
+                href="/"
+                className="flex items-center gap-2 font-montreal font-semibold text-lg tracking-tight"
+              >
+                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-600 text-white shadow-sm">
+                  <AtomIcon className="h-4 w-4" weight="bold" />
+                </div>
+                <span>clarias.</span>
+              </Link>
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
-                className="rounded-md p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                className="rounded-md border border-separator/10 p-1.5 text-muted-foreground transition hover:bg-muted/20 hover:text-foreground"
                 aria-label="Close sidebar"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
             <SidebarNav />
@@ -46,22 +71,27 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </>
       )}
 
-      {/* Main content area */}
       <div className="flex flex-1 flex-col">
-        {/* Top bar (mobile only — contains hamburger) */}
-        <header className="flex h-14 items-center gap-3 border-neutral-200 border-b px-4 lg:hidden dark:border-neutral-800">
+        <header className="flex h-14 items-center gap-3 border-separator/10 border-b bg-background/50 px-4 backdrop-blur-sm lg:hidden">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="rounded-md p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            className="rounded-md border border-separator/10 p-1.5 text-muted-foreground transition hover:bg-muted/20 hover:text-foreground"
             aria-label="Open sidebar"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-4 w-4" />
           </button>
-          <span className="font-semibold">Project Clarias</span>
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-montreal font-semibold tracking-tight"
+          >
+            <div className="flex h-5 w-5 items-center justify-center rounded-md bg-blue-600 text-white shadow-sm">
+              <AtomIcon className="h-3 w-3" weight="bold" />
+            </div>
+            <span className="text-sm">clarias.</span>
+          </Link>
         </header>
 
-        {/* Page content */}
         <main className="flex-1 p-6">{children}</main>
       </div>
     </div>
