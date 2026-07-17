@@ -1,9 +1,9 @@
-import { AppShell } from "@/components/app-shell";
+import { DashboardShell } from "@/components/dashboard-shell";
 
 export default function Template({ children }: { children: React.ReactNode }) {
   return (
-    <AppShell>
+    <DashboardShell>
       {children}
-    </AppShell>
+    </DashboardShell>
   );
 }

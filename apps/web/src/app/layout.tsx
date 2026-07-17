@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Sans } from "next/font/google";
 import { Toaster } from "sonner";
-import { AppShell } from "@/components/app-shell";
 import { Providers } from "@/lib/providers";
 import "./globals.css";
 
@@ -34,11 +33,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSans.variable} h-full antialiased scroll-smooth`}
+      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSans.variable} h-full scroll-smooth antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-full flex-col">
         <Providers>
-          <AppShell>{children}</AppShell>
+          {children}
           <Toaster richColors position="bottom-right" />
         </Providers>
       </body>
