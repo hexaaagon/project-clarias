@@ -1,7 +1,6 @@
 "use client";
 
 import { Cpu } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,11 +10,9 @@ function IoTIcon() {
 }
 
 export function SignIn6() {
-  const router = useRouter();
-
   function handleGuest() {
     document.cookie = "clarias-auth=guest; path=/; max-age=86400";
-    router.push("/");
+    window.location.href = "/";
     window.location.reload();
   }
 
